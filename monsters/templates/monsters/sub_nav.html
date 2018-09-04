@@ -1,0 +1,11 @@
+{% extends "dndd/nav.html" %}
+
+{% block content %}
+<ul>
+  <li><a {% block li_browse_att %}{% endblock %} href="browse">Browse</a></li>
+  <li><a {% block li_custom_att %}{% endblock %} href="custom">Custom</a></li>
+  <li><a {% block li_scrape_att %}{% endblock %} href="scrape">Scrape</a></li>
+</ul>
+    {% block content2 %}
+    {% endblock %}
+{% endblock %}
