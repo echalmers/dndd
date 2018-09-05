@@ -8,12 +8,12 @@ r = requests.get('http://www.orcpub.com/dungeons-and-dragons/5th-edition/monster
 html = r.content.decode()
 
 # get all monster links
-# links = set(re.findall('/dungeons-and-dragons/5th-edition/monsters/.+?"', html))
-# links = [x[:-1] for x in links]
-links = ['/dungeons-and-dragons/5th-edition/monsters/ancient-brass-dragon']
+links = set(re.findall('/dungeons-and-dragons/5th-edition/monsters/.+?"', html))
+links = [x[:-1] for x in links]
+# links = ['/dungeons-and-dragons/5th-edition/monsters/ancient-brass-dragon']
 
 # process each monster page
-key_re = re.compile(':\S+? ')
+key_re = re.compile('\W:\S+? ')
 comma_re = re.compile('}\s+\{')
 for i in range(0, len(links)):
     link = links[i]
@@ -25,6 +25,8 @@ for i in range(0, len(links)):
     html = html.split('id="embedded-data">')[1]
     html = html.split('</div>')[0]
 
+    print(html)
+
     # replace newlines
     html = html.replace('\\n', '\n')
 
@@ -35,7 +37,7 @@ for i in range(0, len(links)):
         if match is None:
             break
 
-        html = html.replace(match.group(), '"' + match.group()[1:-1] + '": ')
+        html = html.replace(match.group(), match.group()[0] + '"' + match.group()[2:-1] + '": ')
 
     # add missing commas
     html = comma_re.sub('}, {', html)
