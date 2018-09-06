@@ -2,13 +2,15 @@
 <head>
 {% load static %}
 <link rel="stylesheet" type="text/css" href="{% static 'dndd/style.css' %}">
+  {% block head %}
+  {% endblock %}
 </head>
 <body>
 
-<ul>
-  <li><a class="active" href="#home">Monsters</a></li>
-  <li><a href="#news">Players</a></li>
-  <li><a href="#contact">Combat</a></li>
+<ul class="nav1">
+  <li class="nav1"><a class="active nav1" href="#home">Monsters</a></li>
+  <li class="nav1"><a class="nav1" href="#news">Players</a></li>
+  <li class="nav1"><a class="nav1" href="#contact">Combat</a></li>
 </ul>
 {% block content %}
 {% endblock %}
