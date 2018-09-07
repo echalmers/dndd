@@ -6,11 +6,14 @@ from monsters.models import Monster
 
 
 def browse(request):
-    m = Monster.objects.all()
+    m = Monster.objects.all().values()
     df = pd.DataFrame.from_records(m)
-    variables = df_to_text(df, 'monthly_breakdown')
+    df = df[['name', 'type', 'hp', 'ac', 'speed', 'cr', 'xp']]
+    df = df.sort_values('cr')
 
-    return render(request, 'monsters/browse.html' )
+    variables = df_to_text(df, 'monster')
+
+    return render(request, 'monsters/browse.html', variables)
 
 def custom(request):
     return render(request, 'monsters/custom.html' )

@@ -8,9 +8,9 @@
 <body>
 
 <ul class="nav1">
-  <li class="nav1"><a class="active nav1" href="#home">Monsters</a></li>
-  <li class="nav1"><a class="nav1" href="#news">Players</a></li>
-  <li class="nav1"><a class="nav1" href="#contact">Combat</a></li>
+  <li class="nav1"><a class="{% block li_monsters_att %}{% endblock %} nav1" href="/monsters">Monsters</a></li>
+  <li class="nav1"><a class="{% block li_players_att %}{% endblock %} nav1" href="/players">Players</a></li>
+  <li class="nav1"><a class="{% block li_combat_att %}{% endblock %} nav1" href="/combat">Combat</a></li>
 </ul>
 {% block content %}
 {% endblock %}

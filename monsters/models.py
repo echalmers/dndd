@@ -22,7 +22,7 @@ class Monster(models.Model):
     immunities = models.TextField(null=True)
     senses = models.TextField(null=True)
     languages = models.TextField(null=True)
-    cr = models.IntegerField()
+    cr = models.FloatField()
     xp = models.IntegerField()
     legendary_action_notes = models.TextField(null=True)
 
