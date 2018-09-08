@@ -29,12 +29,16 @@ def create(request):
         # create form
         creation_form = NewMonsterForm(request.POST)
 
+        print('posted')
         if creation_form.is_valid():
-            print(creation_form.name)
+            print(creation_form.cleaned_data)
+        else:
+            return HttpResponse('<html>' + str(creation_form.errors) + '</html>')
 
         return HttpResponseRedirect(reverse('browse'))
 
     else:
+        print(request.GET['name'])
         creation_form = NewMonsterForm(instance=Monster.objects.filter(name='Weasel')[0])
         context = {'form': creation_form,
                    }
