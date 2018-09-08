@@ -20,5 +20,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^monsters/', include('monsters.urls')),
     url(r'^players/', include('players.urls')),
+    url(r'^combat/', include('combat.urls')),
+
 
 ]

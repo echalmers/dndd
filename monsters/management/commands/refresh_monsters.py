@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from monsters.models import Monster, Action, Trait, LegendaryAction
+from monsters.models import Monster
 import re
 import json
 import requests
@@ -11,11 +11,6 @@ class Command(BaseCommand):
     #     parser.add_argument('filenames', nargs='+', type=str)
 
     def handle(self, *args, **options):
-
-        Trait.objects.all().delete()
-        Action.objects.all().delete()
-        LegendaryAction.objects.all().delete()
-        Monster.objects.all().delete()
 
         r = requests.get('http://www.orcpub.com/dungeons-and-dragons/5th-edition/monsters')
         html = r.content.decode()
@@ -65,60 +60,70 @@ class Command(BaseCommand):
                 .replace('"challenge": 1/4', '"challenge": 0.25') \
                 .replace('"challenge": 1/2', '"challenge": 0.5')
 
-            # create record
+            # load from json
             info = json.loads(html, strict=False)['monster']
+
+            # get immunities
             immunities = info.get('damage-immunities', '') + ', ' + info.get('condition-immunities', '')
             immunities = immunities.strip(', ')
-            leg_act_notes = None
-            if 'legendary-actions' in info:
-                leg_act_notes = info['legendary-actions']['description']
 
-            m = Monster(name=info['name'],
-                        size=info['size'],
-                        type=info['type'],
-                        alignment=info['alignment'],
-                        ac=info['armor-class'],
-                        hp=str(info['hit-points']['die-count']) + 'd' + str(info['hit-points']['die']) + ' + ' + str(info['hit-points'].get('modifier', 0)),
-                        speed=info['speed'],
-                        str_mod=info['str'],
-                        dex_mod=info['dex'],
-                        con_mod=info['con'],
-                        int_mod=info['int'],
-                        wis_mod=info['wis'],
-                        cha_mod=info['cha'],
-                        saving_throws=json.dumps(info['saving-throws']) if 'saving-throws' in info else None,
-                        skills=json.dumps(info['skills']) if 'skills' in info else None,
-                        vulnerabilies=info.get('damage-vulnerabilities', None),
-                        resistances=info.get('damage-resistances', None),
-                        immunities=immunities,
-                        senses=info['senses'],
-                        languages=info.get('languages', None),
-                        cr=info['challenge'],
-                        xp=xp,
-                        legendary_action_notes=leg_act_notes,
-                        )
+            # get legendary actions
+            if 'legendary-actions' in info:
+                leg_actions = info['legendary-actions']['description']
+
+                for action in info['legendary-actions'].get('actions', []):
+                    leg_actions += '\n\n' + '<b>{name}:</b> {description}'.format(name=action['name'] + ('({})'.format(action['notes']) if 'notes' in action else ''),
+                                                                                  description=action['description'])
+            else: leg_actions = None
+
+            # get actions
+            if 'actions' in info:
+                acts = '\n\n'.join(['<b>{name}:</b> {description}'.format(name=action['name'] + ('({})'.format(action['notes']) if 'notes' in action else ''),
+                                                                          description=action['description'])
+                                    for action in info['actions']])
+            else: acts = None
+
+            # get traits
+            if 'traits' in info:
+                traits = '\n\n'.join(['<b>{name}:</b> {description}'.format(name=trait['name'] + ('({})'.format(trait['notes']) if 'notes' in trait else ''),
+                                                                          description=trait['description'])
+                                    for trait in info['traits']])
+            else: traits = None
+
+            # upsert the monster record
+            m, _ = Monster.objects.get_or_create(name=info['name'])
+
+            m.size = info.get('size')
+            m.type = info['type']
+            m.alignment = info['alignment']
+            m.ac = info['armor-class']
+            m.hp = str(info['hit-points']['die-count']) + 'd' + str(info['hit-points']['die']) + ' + ' + str(
+                info['hit-points'].get('modifier', 0))
+            m.speed = info['speed']
+            m.str_mod = info['str']
+            m.dex_mod = info['dex']
+            m.con_mod = info['con']
+            m.int_mod = info['int']
+            m.wis_mod = info['wis']
+            m.cha_mod = info['cha']
+            m.saving_throws = json.dumps(info['saving-throws']) if 'saving-throws' in info else None
+            m.skills = json.dumps(info['skills']) if 'skills' in info else None
+            m.vulnerabilies = info.get('damage-vulnerabilities', None)
+            m.resistances = info.get('damage-resistances', None)
+            m.immunities = immunities
+            m.senses = info['senses']
+            m.languages = info.get('languages', None)
+            m.cr = info['challenge']
+            m.xp = xp
+            m.legendary_actions = leg_actions
+            m.actions = acts
+            m.traits = traits
+
             m.save()
 
-            for trait in info.get('traits', []):
-                t = Trait(monster=m,
-                          name=trait['name'] + ('({})'.format(trait['notes']) if 'notes' in trait else ''),
-                          description=trait['description'],
-                          )
-                t.save()
 
-            for action in info.get('actions', []):
-                a = Action(monster=m,
-                           name=action['name'] + ('({})'.format(action['notes']) if 'notes' in action else ''),
-                           description=action['description'],
-                           )
-                a.save()
 
-            if 'legendary-actions' in info:
-                for action in info['legendary-actions'].get('actions', []):
-                    a = LegendaryAction(monster=m,
-                                        name=action['name'] + ('({})'.format(action['notes']) if 'notes' in action else ''),
-                                        description=action['description'],
-                                        )
-                    a.save()
+
+
 
 
