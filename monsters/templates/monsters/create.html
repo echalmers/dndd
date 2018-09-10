@@ -3,7 +3,7 @@
 {% block li_custom_att %}active{% endblock %}
 
 {% block content2 %}
-  this is the custom page
+  <h1>Create / Edit Monster</h1>
   <form action="" method="post">
     {% csrf_token %}
       <table align="center">{{ form.as_table }}</table>

@@ -1,7 +1,7 @@
 from django.forms import ModelForm
 from .models import Monster
 
-class NewMonsterForm(ModelForm):
+class MonsterForm(ModelForm):
 
     class Meta:
         model = Monster
