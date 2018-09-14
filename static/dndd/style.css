@@ -108,6 +108,7 @@ h1 {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    background-color: #d0dff2;
 }
 
 /* The actual popup */

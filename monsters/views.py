@@ -84,8 +84,6 @@ def deets(request):
     if variables.get('saving_throws') is not None:
         saving_throws = json.loads(variables['saving_throws'])
         variables['saving_throws'] = ', '.join([key + ' ' + signed_string(saving_throws[key]) for key in saving_throws]) + ' '
-        print(variables['saving_throws'])
-        print(rolls2links(variables['saving_throws']))
 
     for key in ['str_mod', 'dex_mod', 'con_mod', 'wis_mod', 'int_mod', 'cha_mod']:
         variables[key] = signed_string(variables[key], is_ability_score=True)
@@ -94,6 +92,6 @@ def deets(request):
         try:
             variables[key] = rolls2links(variables[key])
         except:
-            pass #print(traceback.format_exc())
+            print(traceback.format_exc())
 
     return render(request, 'monsters/details.html', variables)
