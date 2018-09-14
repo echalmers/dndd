@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'monsters',
     'players',
     'combat',
+    'roller',
 ]
 
 MIDDLEWARE = [

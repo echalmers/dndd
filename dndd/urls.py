@@ -21,6 +21,6 @@ urlpatterns = [
     url(r'^monsters/', include('monsters.urls')),
     url(r'^players/', include('players.urls')),
     url(r'^combat/', include('combat.urls')),
-
+    url(r'^roller/', include('roller.urls')),
 
 ]

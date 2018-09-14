@@ -10,4 +10,5 @@ urlpatterns = [
     path('create/<str:name>/', views.create, name='create_monster'),
     path('delete/<str:name>/', views.delete, name='delete_monster'),
     # path('<str:name>', views.show, name="show_monster"),
+    url(r'^deets', views.deets, name='deets'),
 ]

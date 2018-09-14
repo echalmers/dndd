@@ -5,21 +5,55 @@
 </head>
 <body>
 
-<table border="1">
+<table border="0" rules="rows" cellpadding="10">
+    <tr><td colspan="6"><h3>{{name | safe}}</h3>
+        {{size | safe}} {{type | safe}}, {{alignment | safe}} ({{cr | safe}} CR, {{xp | safe}} XP)
+    </td></tr>
     <tr>
-        <td>Str {{str_mod}}</td>
-        <td>Dex {{dex_mod}}</td>
-        <td>Con {{con_mod}}</td>
-        <td>Wis {{wis_mod}}</td>
-        <td>Int {{int_mod}}</td>
-        <td>Cha {{cha_mod}}</td>
-
+        <td colspan="6"><b>HP: </b>  {{hp | safe}}</td>
+    </tr>
+    <tr>
+        <td colspan="6"><b>AC: </b>  {{ac | safe}}</td>
+    </tr>
+    <tr>
+        <td>Str {{str_mod | safe}}</td>
+        <td>Dex {{dex_mod | safe}}</td>
+        <td>Con {{con_mod | safe}}</td>
+        <td>Wis {{wis_mod | safe}}</td>
+        <td>Int {{int_mod | safe}}</td>
+        <td>Cha {{cha_mod | safe}}</td>
+    </tr>
+    <tr>
+        <td colspan="6"><b>Saving Throws: </b>  {{saving_throws | safe}}</td>
+    </tr>
+    <tr>
+        <td colspan="6"><b>Speed: </b>  {{speed | safe}}</td>
     </tr>
     <tr>
         <td colspan="6">{{actions | safe}}</td>
     </tr>
+    <tr>
+        <td colspan="6">{{legendary_actions | safe}}</td>
+    </tr>
+    <tr>
+        <td colspan="6">{{traits | safe}}</td>
+    </tr>
+    <tr>
+        <td colspan="6"><b>Senses: </b>{{senses | safe}}</td>
+    </tr>
+    <tr>
+        <td colspan="6"><b>Vulnerabilities: </b>{{vulnerabilities | safe}}</td>
+    </tr>
+    <tr>
+        <td colspan="6"><b>Resistances: </b>{{resistances | safe}}</td>
+    </tr>
+    <tr>
+        <td colspan="6"><b>Immunities: </b>{{immunities | safe}}</td>
+    </tr>
+
 </table>
 
 
 </body>
 </html>
+
