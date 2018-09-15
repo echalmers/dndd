@@ -92,6 +92,6 @@ def deets(request):
         try:
             variables[key] = rolls2links(variables[key])
         except:
-            print(traceback.format_exc())
+            pass#print(traceback.format_exc())
 
     return render(request, 'monsters/details.html', variables)
