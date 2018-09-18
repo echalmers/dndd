@@ -94,9 +94,21 @@ def rolls2links(text):
 # print(re.findall('[0-9]{1,3}\s{0,2}d\s{0,2}[0-9]{1,2}\s{0,2}[\+-−]\s{0,2}[0-9]{1,3}', 'it: 2 (1d6 − 1) s'))
 # print(roll('2','6','-0'))
 
+def simulate_roll(count, die, mod):
+
+    info = {}
+    info['rolls'] = np.random.randint(1, die + 1, count)
+    info['mod'] = mod
+    info['total'] = sum(info['rolls']) + mod
+    info['math'] = ' + '.join([str(x) for x in info['rolls']]) + ' + ' + str(mod) + ' = ' + str(info['total'])
+    return info
+
+
 def roll(request):
 
     print(request.GET)
+
+    type = request.GET.get('type', 'math')
 
     count = request.GET.get('count')
     die = request.GET.get('die')
@@ -111,4 +123,9 @@ def roll(request):
     else:
         mod = int(mod)
 
-    return HttpResponse(sum(np.random.randint(1, die + 1, count)) + mod)
+    roll = simulate_roll(count, die, mod)
+    if type == 'math':
+        return HttpResponse(roll['math'])
+    else:
+        return HttpResponse(roll['total'])
+
