@@ -2,7 +2,8 @@ from django.db import models
 
 
 class Monster(models.Model):
-    name = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=50, unique=True,
+                            help_text='Using an existing name will overwrite that entry. <br>Using a new name will create a new entry<br>')
     size = models.CharField(max_length=20, null=True, blank=True)
     type = models.CharField(max_length=20, null=True, blank=True)
     alignment = models.CharField(max_length=20, null=True, blank=True)

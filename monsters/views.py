@@ -43,10 +43,15 @@ def create(request, name=None):
     print(name)
 
     if request.method == 'POST':
-        if name is not None:
-            m = Monster.objects.get(name=name)
+        # if name is not None:
+        #     m = Monster.objects.get(name=name)
+        #     f = MonsterForm(request.POST, instance=m)
+        # else:
+        #     f = MonsterForm(request.POST)
+        try:
+            m = Monster.objects.get(name=request.POST.get('name'))
             f = MonsterForm(request.POST, instance=m)
-        else:
+        except Monster.DoesNotExist:
             f = MonsterForm(request.POST)
 
         if f.is_valid():

@@ -13,6 +13,12 @@ def browse(request):
     df = pd.DataFrame.from_records(players)
     if len(df.index) > 0:
         df = df[['name', 'level', 'ac', 'initiative']]
+    else:
+        df = pd.DataFrame(columns=['name', 'level', 'ac', 'initiative'])
+
+    df['actions'] = '<a href="create/' + df['name'] \
+                    + '">clone/edit</a>   <a href="delete/' + df['name'] \
+                    + '">delete</a>'
 
     variables = df_to_text(df, 'player')
     print(variables)
@@ -26,10 +32,14 @@ def create(request, name=None):
     print(name)
 
     if request.method == 'POST':
-        if name is not None:
-            p = Player.objects.get(name=name)
+        # if name is not None:
+        #     p = Player.objects.get(name=name)
+        #     f = PlayerForm(request.POST, instance=p)
+        # else:
+        try:
+            p = Player.objects.get(name=request.POST.get('name'))
             f = PlayerForm(request.POST, instance=p)
-        else:
+        except Player.DoesNotExist:
             f = PlayerForm(request.POST)
 
         if f.is_valid():
@@ -38,7 +48,7 @@ def create(request, name=None):
         else:
             return HttpResponse(str(f.errors))
 
-    else:
+    elif request.method == 'GET':
         if name is not None:
             f = PlayerForm(instance=Player.objects.get(name=name))
         else:
@@ -46,3 +56,8 @@ def create(request, name=None):
     context = {'form': f,
                }
     return render(request, 'players/create.html', context)
+
+
+def delete(request, name):
+    Player.objects.get(name=name).delete()
+    return HttpResponseRedirect(reverse('browse_players'))

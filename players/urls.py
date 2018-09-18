@@ -7,4 +7,5 @@ urlpatterns = [
     url(r'^browse$', views.browse, name='browse_players'),
     url(r'^create$', views.create, name='create_player'),
     path('create/<str:name>/', views.create, name='create_player'),
+    path('delete/<str:name>/', views.delete, name='delete_player'),
 ]

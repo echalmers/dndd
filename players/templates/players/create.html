@@ -4,7 +4,7 @@
 
 {% block content2 %}
   <h1>Create / Edit Player</h1>
-  <form action="" method="post">
+  <form action="/players/create" method="post">
     {% csrf_token %}
       <table align="center">{{ form.as_table }}</table>
 
