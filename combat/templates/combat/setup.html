@@ -1,0 +1,17 @@
+{% extends "combat/sub_nav.html" %}
+
+{% block head2 %}
+{% endblock %}
+
+{% block content2 %}
+<form action="/combat/add_pc">
+  <input list="pcs" name="pc">
+  <datalist id="pcs">
+    {{pc_options | safe}}
+  </datalist>
+  <input type="text" name="display_name">
+  <input type="submit">
+</form>
+
+{{data | safe}}
+{% endblock %}
