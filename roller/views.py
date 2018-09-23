@@ -8,7 +8,7 @@ roll_re = re.compile('[0-9]{1,3}\s{0,2}d\s{0,2}[0-9]{1,2}')
 mod_re = re.compile('[\+\-]\s{0,2}[0-9]{1,3}')
 signed_int_re = re.compile('[\+\-]\s{0,2}[0-9]{1,3}')
 
-poptext = """<div class="popup" onclick="getRollSim('{popupname}', {count},{die},{mod})">{text}<span class="popuptext" id="{popupname}">A Simple Popup!</span></div>"""
+poptext = """<div class="popup" onclick="getRollSim('{popupname}', {count},{die},{mod})">{text}<span class="popuptext" id="{popupname}">calculating...</span></div>"""
 
 num = 0
 
@@ -113,8 +113,6 @@ def simulate_roll(count, die, mod):
 
 
 def roll(request):
-
-    print(request.GET)
 
     type = request.GET.get('type', 'math')
 

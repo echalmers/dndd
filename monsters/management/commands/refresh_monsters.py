@@ -99,6 +99,7 @@ class Command(BaseCommand):
             m.ac = info['armor-class']
             m.hp = str(info['hit-points']['die-count']) + 'd' + str(info['hit-points']['die']) + ' + ' + str(
                 info['hit-points'].get('modifier', 0))
+            m.hp = re.sub('\s{0,2}\+\s{0,2}-', ' - ', m.hp)
             m.speed = info['speed']
             m.str_mod = info['str']
             m.dex_mod = info['dex']

@@ -5,7 +5,9 @@ from players.models import Player
 from monsters.models import Monster
 import pandas as pd
 from util import df_to_text
-from roller.views import simulate_roll_from_text
+from roller.views import simulate_roll_from_text, simulate_roll
+import random
+import numpy as np
 
 
 def main(request):
@@ -19,13 +21,13 @@ def setup(request):
     pcs = PcCombatant.objects.all()
     if len(pcs) > 0:
         pcs = [{'name': pc.display_name,
-                'ac': pc.player.ac,
-                'level': pc.player.level,}
+                'level': pc.player.level,
+                'initiative': pc.initiative,}
                for pc in pcs]
         pc_df = pd.DataFrame(pcs)
-        pc_df = pc_df[['name', 'ac', 'level']]
+        pc_df = pc_df[['name', 'level', 'initiative']]
     else:
-        pc_df = pd.DataFrame(columns=['name', 'ac', 'level'])
+        pc_df = pd.DataFrame(columns=['name', 'level', 'initiative'])
 
     pc_df['actions'] = '<a href="remove_pc/' + pc_df['name'] \
                        + '">delete</a>'
@@ -42,17 +44,19 @@ def setup(request):
     if len(npcs) > 0:
         npcs = [{'display name': npc.display_name,
                  'NPC name': npc.monster.name,
-                 'hp': simulate_roll_from_text(npc.monster.hp)['total'],
+                 'max hp': npc.max_hp,
                  'cr': npc.monster.cr,
-                 'xp': npc.monster.xp}
+                 'xp': npc.monster.xp,
+                 'initiative': npc.initiative,}
                 for npc in npcs]
         npcs = pd.DataFrame(npcs)
-        npcs = npcs[['display name','NPC name','hp','cr','xp']]
+        npcs = npcs[['display name','NPC name','max hp','cr','xp','initiative']]
     else:
-        npcs = pd.DataFrame(columns=['display name','NPC name','hp','cr','xp'])
+        npcs = pd.DataFrame(columns=['display name','NPC name','max hp','cr','xp','initiative'])
 
     npcs['actions'] = '<a href="remove_npc/' + npcs['display name'] \
                        + '">delete</a>'
+    npcs['NPC name'] = npcs['NPC name'].apply(lambda x: '<a onclick="loadDescript(\'{name}\')" href="#">{name}</a>'.format(name=x))
 
     variables.update(df_to_text(npcs, prefix='npcs'))
 
@@ -64,26 +68,29 @@ def setup(request):
 
     from combat.xp_table import xp_table
     from io import StringIO
-    ratings = pd.DataFrame.from_csv(StringIO(xp_table), index_col=None)
+    ratings = pd.read_csv(StringIO(xp_table), index_col=None)
     # print(ratings)
     xp_ref = {
         difficulty: sum([ratings.loc[ratings.Level==l, difficulty].values[0] for l in pc_df.level.values])
         for difficulty in ['Easy', 'Moderate', 'Challenging', 'Hard']
     }
+    xp_ref['Deadly'] = 2*xp_ref['Hard'] - xp_ref['Challenging']
     xp_dif = pd.Series(xp_ref)
     xp_dif = (xp_dif - variables['totalxp']).abs()
 
     variables['difficulty'] = xp_dif.idxmin
-    variables['maxxp'] = xp_ref['Hard']
 
     variables['easy_xp'] = xp_ref['Easy']
     variables['moderate_xp'] = xp_ref['Moderate']
     variables['challenging_xp'] = xp_ref['Challenging']
     variables['hard_xp'] = xp_ref['Hard']
+    variables['deadly_xp'] = xp_ref['Deadly']
 
     # populate drop-down with list of npcs
     all_npcs = ['<option value="{}">'.format(monster.name)
                for monster in Monster.objects.all()]
+    variables['cr_options'] = ''.join(['<option value="{}">'.format(cr)
+                               for cr in sorted(list(set([int(monster.cr) for monster in Monster.objects.all()])))])
     variables['npc_options'] = ''.join(all_npcs)
 
     return render(request, 'combat/setup.html', variables)
@@ -96,6 +103,7 @@ def add_pc(request):
     player = Player.objects.get(name=pc_name)
 
     pc_combatant = PcCombatant(display_name=player.name,
+                               initiative=simulate_roll(1,20,player.initiative)['total'],
                                player=player)
     pc_combatant.save()
     return HttpResponseRedirect(reverse('setup_encounter'))
@@ -112,8 +120,13 @@ def remove_pc(request, pc_name=None):
 def add_npc(request):
     npc_name = request.GET.get('npc')
     display_name = request.GET.get('display_name')
+    _add_npc(npc_name, display_name)
+    return HttpResponseRedirect(reverse('setup_encounter'))
+
+
+def _add_npc(npc_name, display_name):
     if display_name == '':
-        number = 0
+        number = 1
         while True:
             try:
                 print(number)
@@ -125,13 +138,49 @@ def add_npc(request):
         display_name = 'NPC ' + str(number)
 
     monster = Monster.objects.get(name=npc_name)
-    npcCombatant = NpcCombatant(display_name=display_name, monster=monster)
-    print(npcCombatant.display_name)
+    init_roll = simulate_roll(count=1,
+                              die=20,
+                              mod=int((monster.dex_mod-10)/2))
+    max_hp = simulate_roll_from_text(monster.hp)['total']
+    npcCombatant = NpcCombatant(display_name=display_name,
+                                initiative=init_roll['total'],
+                                max_hp=max_hp,
+                                current_hp=max_hp,
+                                monster=monster)
     npcCombatant.save()
-    return HttpResponseRedirect(reverse('setup_encounter'))
 
 
 def remove_npc(request, npc_name=None):
     npc_combatant = NpcCombatant.objects.get(display_name=npc_name)
     npc_combatant.delete()
     return HttpResponseRedirect(reverse('setup_encounter'))
+
+
+def randomize(request):
+
+    total_xp = int(request.GET.get('total_xp'))
+    max_cr = int(request.GET.get('max_cr'))
+
+    if request.GET.get('clear_existing', 'False') == 'True':
+        NpcCombatant.objects.all().delete()
+
+    current_xp = sum([npc.monster.xp for npc in NpcCombatant.objects.all()])
+    xp_budget = total_xp - current_xp
+
+    selected_monsters = []
+    while True:
+        monster_options = Monster.objects.filter(cr__lte=max_cr, cr__gt=0, xp__lte=xp_budget).values()
+        if len(monster_options) == 0:
+            break
+
+        monster_options = pd.DataFrame.from_records(monster_options)
+        selected_monster = np.random.choice(monster_options.index.values, p=monster_options.xp.values/monster_options.xp.sum())
+        selected_monsters.append(monster_options.name[selected_monster])
+        xp_budget -= monster_options.xp[selected_monster]
+
+    for monster_name in selected_monsters:
+        _add_npc(monster_name, '')
+
+    return HttpResponseRedirect(reverse('setup_encounter'))
+
+
