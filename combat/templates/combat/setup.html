@@ -1,17 +1,124 @@
 {% extends "combat/sub_nav.html" %}
 
+{% block li_setup_att %}active{% endblock %}
+
 {% block head2 %}
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+
+      // Load the Visualization API and the controls package.
+      google.charts.load('current', {'packages':['corechart', 'controls', 'table']});
+      google.charts.setOnLoadCallback(drawTables);
+
+      function drawTables() {
+        // Create our data tables.
+        var pc_data = new google.visualization.arrayToDataTable([
+            {{ pcs_columns|safe }},
+            {{ pcs_rows|safe }}
+        ]);
+        var npc_data = new google.visualization.arrayToDataTable([
+            {{ npcs_columns|safe }},
+            {{ npcs_rows|safe }}
+        ]);
+
+        // Create table options
+        var options = {
+            'width': '600',
+            <!--'height': 500,-->
+            'allowHtml': true,
+        };
+
+        var pc_table = new google.visualization.Table(document.getElementById('pc_table_div'));
+        var npc_table = new google.visualization.Table(document.getElementById('npc_table_div'));
+        pc_table.draw(pc_data, options);
+        npc_table.draw(npc_data, options);
+      }
+
+    </script>
 {% endblock %}
 
 {% block content2 %}
-<form action="/combat/add_pc">
-  <input list="pcs" name="pc">
-  <datalist id="pcs">
-    {{pc_options | safe}}
-  </datalist>
-  <input type="text" name="display_name">
-  <input type="submit">
-</form>
 
-{{data | safe}}
+<h1>Build Encounter</h1>
+
+<div id="pc_div" style="background-color: #e3ebed;">
+    <h2>Player-Controlled Combatants</h2>
+
+    <table align="center">
+        <tr><td><div id="pc_table_div"></div></td></tr>
+    </table>
+
+    <form action="/combat/add_pc">
+        <table align="center">
+            <tr>
+                <td> Add PC character by name: </td>
+                <td>
+                    <input list="pcs" name="pc">
+                    <datalist id="pcs">
+                        {{pc_options | safe}}
+                    </datalist>
+                    <input type="submit">
+                </td>
+            </tr>
+        </table>
+    </form>
+
+    <div>
+        <table align="center">
+            <tr>
+                <td colspan="2">XP Budget:</td>
+            </tr>
+            <tr><td>Easy</td><td>{{easy_xp | safe}}</td></tr>
+            <tr><td>Moderate</td><td>{{moderate_xp | safe}}</td></tr>
+            <tr><td>Challenging</td><td>{{challenging_xp | safe}}</td></tr>
+            <tr><td>Hard</td><td>{{hard_xp | safe}}</td></tr>
+        </table>
+    </div>
+</div>
+
+<br>
+
+<div id="npc_div" style="background-color: #e3e3ed;">
+    <h2>Monsters</h2>
+
+    <table align="center">
+        <tr><td><div id="npc_table_div"></div></td></tr>
+    </table>
+
+    <form action="/combat/add_npc">
+        <table align="center">
+            <tr>
+                <td> Add NPC by name: </td>
+                <td>
+                    <input list="npcs" name="npc">
+                    <datalist id="npcs">
+                        {{npc_options | safe}}
+                    </datalist>
+                </td>
+            </tr>
+            <tr>
+                <td>Assign a (unique) display name</td>
+                <td>
+                    <input type="text" name="display_name">
+                </td>
+            </tr>
+            <tr><td></td><td><input type="submit"></td></tr>
+        </table>
+    </form>
+
+    <div>
+        <table align="center">
+            <tr>
+                <td>Total XP:</td><td>{{totalxp | safe}}</td>
+            </tr>
+            <tr>
+                <td>Max CR:</td><td>{{maxcr | safe}}</td>
+            </tr>
+            <tr>
+                <td>Encounter Difficulty:</td><td>{{difficulty | safe}}</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
 {% endblock %}

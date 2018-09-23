@@ -94,6 +94,14 @@ def rolls2links(text):
 # print(re.findall('[0-9]{1,3}\s{0,2}d\s{0,2}[0-9]{1,2}\s{0,2}[\+-−]\s{0,2}[0-9]{1,3}', 'it: 2 (1d6 − 1) s'))
 # print(roll('2','6','-0'))
 
+
+def simulate_roll_from_text(text):
+    parts = text.replace('d', ' ').replace(' + ', ' ').split()
+    return simulate_roll(count=int(parts[0]),
+                         die=int(parts[1]),
+                         mod=int(parts[2]))
+
+
 def simulate_roll(count, die, mod):
 
     info = {}

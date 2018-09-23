@@ -54,7 +54,7 @@ li a.nav2:hover:not(.active) {
     background-color: #d0dff2;
 }
 
-h1 {
+h1, h2 {
     text-align: center;
 }
 
