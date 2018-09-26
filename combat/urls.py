@@ -9,5 +9,6 @@ urlpatterns = [
     path(r'remove_pc/<str:pc_name>', views.remove_pc, name='remove_pc'),
     url(r'^add_npc', views.add_npc, name='add_npc'),
     path(r'remove_npc/<str:npc_name>', views.remove_npc, name='remove_npc'),
-    url(r'^randomize', views.randomize, name='random_encounter')
+    url(r'^randomize', views.randomize, name='random_encounter'),
+    url(r'^dashboard', views.dashboard, name='combat_dashboard')
 ]

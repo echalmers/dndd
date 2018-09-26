@@ -1,0 +1,86 @@
+{% extends "combat/sub_nav.html" %}
+
+{% block li_dashboard_att %}active{% endblock %}
+
+{% block head2 %}
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+
+      // Load the Visualization API and the controls package.
+      google.charts.load('current', {'packages':['corechart', 'controls', 'table']});
+      google.charts.setOnLoadCallback(drawTables);
+
+      function drawTables() {
+        // Create our data tables.
+        var data = new google.visualization.arrayToDataTable([
+            {{ combatants_columns|safe }},
+            {{ combatants_rows|safe }}
+        ]);
+
+        // Create table options
+        var options = {
+            'width': '600',
+            <!--'height': 500,-->
+            'allowHtml': true,
+            <!--'showRowNumber': true,-->
+        };
+
+        var table = new google.visualization.Table(document.getElementById('table_div'));
+        table.draw(data, options);
+
+
+          table.setSelection([{row:3}]);
+          <!--window.alert(JSON.stringify(table.getSelection()));-->
+
+      }
+
+    </script>
+{% endblock %}
+
+{% block content2 %}
+
+<script>
+// When the user clicks on div, open the popup
+function getRollSim(id, count, die, mod) {
+    document.getElementById(id).innerHTML = "loading...";
+    <!--ajax to get roll sim-->
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          document.getElementById(id).innerHTML =
+          this.responseText;
+        }
+    };
+  xhttp.open("GET", "/roller?count=" + count + "&die=" + die + "&mod=" + mod, true);
+  xhttp.send();
+
+    var popup = document.getElementById(id);
+    popup.classList.toggle("show");
+}
+</script>
+<script>
+<!--axaj to get monster details-->
+function loadDescript(text) {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      document.getElementById("monsterinfo").innerHTML =
+      this.responseText;
+    }
+  };
+  xhttp.open("GET", "/monsters/deets?name="+text, true);
+  xhttp.send();
+}
+</script>
+
+
+<table align="center" border="1">
+    <tr>
+        <td align="center"><div id="table_div"></div></td>
+    </tr>
+    <tr>
+        <td><div id="monsterinfo"></div></td>
+    </tr>
+</table>
+
+{% endblock %}

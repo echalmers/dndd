@@ -13,6 +13,8 @@ def df_to_text(df, prefix, date_columns=None, include_time_in_dates=True):
                 return json.dumps(value.strftime('%Y-%m-%d %H:%M'))
             else:
                 return json.dumps(value.strftime('%Y-%m-%d'))
+        elif isinstance(value, str) and value.startswith('{') and value.endswith('}'):
+            return value
         else:
             return json.dumps(value)
 

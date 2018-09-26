@@ -184,3 +184,41 @@ def randomize(request):
     return HttpResponseRedirect(reverse('setup_encounter'))
 
 
+def dashboard(request):
+
+    pcs = [{'name': pc.display_name,
+            'ac': pc.player.ac,
+            'initiative': pc.initiative} for pc in PcCombatant.objects.all()]
+    pcs = pd.DataFrame(pcs)
+
+    npcs = [{'name': npc.display_name,
+             'ac': npc.monster.ac,
+             'hp': npc.current_hp,
+             'max hp': npc.max_hp,
+             'NPC name': npc.monster.name,
+             'initiative': npc.initiative} for npc in NpcCombatant.objects.all()]
+    npcs = pd.DataFrame(npcs)
+    # make monster name links
+    npcs['NPC name'] = npcs['NPC name'].apply(
+        lambda x: '<a onclick="loadDescript(\'{name}\')" href="#">{name}</a>'.format(name=x))
+
+    # combine pcs and npcs and add turn order
+    all_combatants = pcs.append(npcs).sort_values('initiative', ascending=False)
+    all_combatants['turn order'] = [i for i in range(1, len(all_combatants.index)+1)]
+
+    # highlight row of current turn
+    for col in ['turn order']:
+        print(col)
+        val = str(all_combatants.loc[all_combatants['turn order']==3, col].values[0])
+        print(val)
+        all_combatants.loc[all_combatants['turn order']==3, col] = """{v: '""" + val + """"', f: '<div style="background-color: #8ab1f2;">""" + val + """</div>'}"""
+        # all_combatants.loc[all_combatants['turn order'] == 3, col] = '<b>' + str(val) + '</b>'
+
+    # order columns
+    all_combatants = all_combatants[['turn order', 'name', 'ac', 'NPC name', 'hp', 'max hp']]
+
+    variables = df_to_text(all_combatants, prefix='combatants')
+
+    return render(request, 'combat/dashboard.html', variables)
+
+
