@@ -24,6 +24,7 @@ def browse(request):
                     + '">clone/edit</a>   <a href="delete/' + df['name'] \
                     + '">delete</a>'
 
+    df = df.sort_values('cr', ascending=False)
     df['name'] = df['name'].apply(lambda x: '<a onclick="loadDescript(\'{name}\')" href="#">{name}</a>'.format(name=x))
 
     pd.set_option('display.max_colwidth', -1)

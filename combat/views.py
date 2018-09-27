@@ -109,6 +109,8 @@ def add_pc(request):
                                initiative=simulate_roll(1,20,player.initiative)['total'],
                                player=player)
     pc_combatant.save()
+
+    reset_combat('main')
     return HttpResponseRedirect(reverse('setup_encounter'))
 
 
@@ -117,6 +119,8 @@ def remove_pc(request, pc_name=None):
     print(pc_name)
     pc_combatant = PcCombatant.objects.get(display_name=pc_name)
     pc_combatant.delete()
+
+    reset_combat('main')
     return HttpResponseRedirect(reverse('setup_encounter'))
 
 
@@ -124,6 +128,8 @@ def add_npc(request):
     npc_name = request.GET.get('npc')
     display_name = request.GET.get('display_name')
     _add_npc(npc_name, display_name)
+
+    reset_combat('main')
     return HttpResponseRedirect(reverse('setup_encounter'))
 
 
@@ -156,6 +162,8 @@ def _add_npc(npc_name, display_name):
 def remove_npc(request, npc_name=None):
     npc_combatant = NpcCombatant.objects.get(display_name=npc_name)
     npc_combatant.delete()
+
+    reset_combat('main')
     return HttpResponseRedirect(reverse('setup_encounter'))
 
 
@@ -235,7 +243,10 @@ def dashboard(request):
     variables['table'] = all_combatants.fillna('').to_html(classes='datatable', escape=False, index=False)
     variables['round'] = combat.round
     variables['turn'] = combat.turn
-    variables['time'] =
+    total_seconds = (combat.round-1)*6
+    minutes = int(total_seconds/60)
+    seconds = format(total_seconds % 60, '02d')
+    variables['time'] = '{min}:{sec}'.format(min=minutes, sec=seconds)
 
     # populate list of npcs
     all_npcs = ['<option value="{}">'.format(name)
@@ -279,7 +290,11 @@ def change_hp(request):
     return HttpResponseRedirect(reverse('combat_dashboard'))
 
 def reset(request):
-    combat, _ = Combat.objects.get_or_create(name='main')
+    name='main'
+    return reset_combat(name)
+
+def reset_combat(name):
+    combat, _ = Combat.objects.get_or_create(name=name)
     combat.turn = 1
     combat.round = 1
     combat.save()

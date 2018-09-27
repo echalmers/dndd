@@ -8,6 +8,7 @@ class PcCombatant(models.Model):
     player = models.ForeignKey(Player, on_delete=None)
 
 class NpcCombatant(models.Model):
+    discovered_ac_max = models.IntegerField()
     display_name = models.CharField(max_length=50, unique=True)
     initiative = models.IntegerField()
     max_hp = models.IntegerField()
