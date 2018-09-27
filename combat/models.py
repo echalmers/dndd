@@ -14,8 +14,9 @@ class NpcCombatant(models.Model):
     current_hp = models.IntegerField()
     monster = models.ForeignKey(Monster, on_delete=None)
 
-class CombatState(models.Model):
-    round = models.IntegerField()
-    turn = models.IntegerField()
+class Combat(models.Model):
+    name = models.CharField(max_length=50)
+    round = models.IntegerField(default=1)
+    turn = models.IntegerField(default=1)
 
 

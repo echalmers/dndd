@@ -20,8 +20,8 @@ def browse(request):
                     + '">clone/edit</a>   <a href="delete/' + df['name'] \
                     + '">delete</a>'
 
-    variables = df_to_text(df, 'player')
-    print(variables)
+    pd.set_option('display.max_colwidth', -1)
+    variables = {'table': df.fillna('').to_html(classes='datatable', escape=False, index=False)}
 
     return render(request, 'players/browse.html', variables)
 
