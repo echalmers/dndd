@@ -16,9 +16,12 @@ def browse(request):
     max_cr = request.GET.get('max_cr', 1000)
 
     m = Monster.objects.filter(cr__lte=max_cr).values()
-    df = pd.DataFrame.from_records(m)
-    df = df[['name', 'type', 'hp', 'ac', 'speed', 'cr', 'xp']]
-    df = df.sort_values(['cr', 'name'])
+    if len(m) > 0:
+        df = pd.DataFrame.from_records(m)
+        df = df[['name', 'type', 'hp', 'ac', 'speed', 'cr', 'xp']]
+        df = df.sort_values(['cr', 'name'])
+    else:
+        df = pd.DataFrame(columns=['name', 'type', 'hp', 'ac', 'speed', 'cr', 'xp'])
 
     df['actions'] = '<a href="create/' + df['name'] \
                     + '">clone/edit</a>   <a href="delete/' + df['name'] \

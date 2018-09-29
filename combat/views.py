@@ -184,7 +184,7 @@ def randomize(request):
 
     selected_monsters = []
     while True:
-        monster_options = Monster.objects.filter(cr__lte=max_cr, cr__gt=0, xp__lte=xp_budget).values()
+        monster_options = Monster.objects.filter(cr__lte=max_cr, xp__lte=xp_budget).values()
         if len(monster_options) == 0:
             break
 
