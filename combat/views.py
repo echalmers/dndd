@@ -110,7 +110,6 @@ def add_pc(request):
                                player=player)
     pc_combatant.save()
 
-    reset_combat('main')
     return HttpResponseRedirect(reverse('setup_encounter'))
 
 
@@ -120,7 +119,10 @@ def remove_pc(request, pc_name=None):
     pc_combatant = PcCombatant.objects.get(display_name=pc_name)
     pc_combatant.delete()
 
-    reset_combat('main')
+    num_combatants = len(NpcCombatant.objects.all()) + len(PcCombatant.objects.all())
+    combat, _ = Combat.objects.get_or_create(name='main')
+    combat.turn = min(combat.turn, num_combatants)
+    combat.save()
     return HttpResponseRedirect(reverse('setup_encounter'))
 
 
@@ -129,7 +131,6 @@ def add_npc(request):
     display_name = request.GET.get('display_name')
     _add_npc(npc_name, display_name)
 
-    reset_combat('main')
     return HttpResponseRedirect(reverse('setup_encounter'))
 
 
@@ -163,7 +164,10 @@ def remove_npc(request, npc_name=None):
     npc_combatant = NpcCombatant.objects.get(display_name=npc_name)
     npc_combatant.delete()
 
-    reset_combat('main')
+    num_combatants = len(NpcCombatant.objects.all()) + len(PcCombatant.objects.all())
+    combat, _ = Combat.objects.get_or_create(name='main')
+    combat.turn = min(combat.turn, num_combatants)
+    combat.save()
     return HttpResponseRedirect(reverse('setup_encounter'))
 
 

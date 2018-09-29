@@ -59,5 +59,8 @@ def create(request, name=None):
 
 
 def delete(request, name):
-    Player.objects.get(name=name).delete()
+    print(name)
+    p = Player.objects.get(name=name)
+    print(p.name)
+    p.delete()
     return HttpResponseRedirect(reverse('browse_players'))
