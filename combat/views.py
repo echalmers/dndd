@@ -298,7 +298,7 @@ def change_hp(request):
             else:
                 npc.discovered_ac_max = min(attack, npc.discovered_ac_max)
             npc.save()
-        else:
+        elif amount == 0:
             if npc.discovered_ac_min is None:
                 npc.discovered_ac_min = attack+1
             else:
