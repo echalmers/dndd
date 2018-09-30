@@ -196,6 +196,7 @@ def randomize(request):
     for monster_name in selected_monsters:
         _add_npc(monster_name, '')
 
+    reset_combat('main')
     return HttpResponseRedirect(reverse('setup_encounter'))
 
 
@@ -282,7 +283,30 @@ def advance(request):
 def change_hp(request):
 
     npc = NpcCombatant.objects.get(display_name=request.GET.get('name'))
-    amount = int(request.GET.get('increase', -int(request.GET.get('decrease', 0))))
+    try:
+        amount = int(request.GET.get('increase', -int(request.GET.get('decrease', 0))))
+    except:
+        amount = 0
+
+    try:
+        attack = int(request.GET.get('attack'))
+        print(amount)
+
+        if amount < 0:
+            if npc.discovered_ac_max is None:
+                npc.discovered_ac_max = attack
+            else:
+                npc.discovered_ac_max = min(attack, npc.discovered_ac_max)
+            npc.save()
+        else:
+            if npc.discovered_ac_min is None:
+                npc.discovered_ac_min = attack+1
+            else:
+                npc.discovered_ac_min = max(attack+1, npc.discovered_ac_min)
+            npc.save()
+    except Exception as ex:
+        raise ex
+        pass
 
     if request.GET.get('resistance', False):
         amount = int(amount/2)
@@ -307,3 +331,50 @@ def reset_combat(name):
         npc.current_hp = npc.max_hp
         npc.save()
     return HttpResponseRedirect(reverse('combat_dashboard'))
+
+def player_view(request):
+
+    combat, _ = Combat.objects.get_or_create(name='main')
+
+    pcs = [{'name': pc.display_name,
+            'initiative': pc.initiative} for pc in PcCombatant.objects.all()]
+    pcs = pd.DataFrame(pcs)
+
+    npcs = [{'name': npc.display_name,
+             'max ac': npc.discovered_ac_max,
+             'min ac': npc.discovered_ac_min,
+             'ac': npc.monster.ac,
+             'hp': npc.current_hp,
+             'max hp': npc.max_hp,
+             'NPC name': npc.monster.name,
+             'initiative': npc.initiative} for npc in NpcCombatant.objects.all()]
+    npcs = pd.DataFrame(npcs)
+
+    # combine pcs and npcs and add turn order
+    all_combatants = pcs.append(npcs).sort_values('initiative', ascending=False)
+    all_combatants['turn order'] = [i for i in range(1, len(all_combatants.index) + 1)]
+
+    # highlight row of current turn
+    for col in ['name']:
+        val = str(all_combatants.loc[all_combatants['turn order'] == combat.turn, col].values[0])
+        all_combatants.loc[all_combatants[
+                               'turn order'] == combat.turn, col] = """<div style="background-color: #8ab1f2;">""" + val + """</div>"""
+        # all_combatants.loc[all_combatants['turn order'] == 3, col] = '<b>' + str(val) + '</b>'
+
+    # mark rows of ko'd characters
+    all_combatants[all_combatants['hp'] <= 0] = '<del>' + all_combatants[all_combatants['hp'] <= 0].astype(str) + '</del>'
+
+    # order columns
+    all_combatants = all_combatants[['name', 'min ac', 'max ac']]
+
+    pd.set_option('display.max_colwidth', -1)
+    variables = {}
+    variables['table'] = all_combatants.fillna('').to_html(classes='datatable', escape=False, index=False)
+    variables['round'] = combat.round
+    variables['turn'] = combat.turn
+    total_seconds = (combat.round - 1) * 6
+    minutes = int(total_seconds / 60)
+    seconds = format(total_seconds % 60, '02d')
+    variables['time'] = '{min}:{sec}'.format(min=minutes, sec=seconds)
+
+    return render(request, 'combat/player_view.html', variables)
