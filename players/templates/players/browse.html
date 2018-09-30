@@ -3,76 +3,59 @@
 {% block li_browse_att %}active{% endblock %}
 
 {% block head2 %}
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript">
-
-      // Load the Visualization API and the controls package.
-      google.charts.load('current', {'packages':['corechart', 'controls']});
-
-      // Set a callback to run when the Google Visualization API is loaded.
-      google.charts.setOnLoadCallback(drawDashboard);
-
-      // Callback that creates and populates a data table,
-      // instantiates a dashboard, a range slider and a pie chart,
-      // passes in the data and draws it.
-      function drawDashboard() {
-
-        // Create our data table.
-        var data = new google.visualization.arrayToDataTable([
-            {{ player_columns|safe }},
-            {{ player_rows|safe }}
-        ]);
-
-        // Create a dashboard.
-        var dashboard = new google.visualization.Dashboard(
-            document.getElementById('dashboard_div'));
-
-        // Create a string filter, passing some options
-        var nameFilter = new google.visualization.ControlWrapper({
-          'controlType': 'StringFilter',
-          'containerId': 'name_filter_div',
-          'options': {
-            'filterColumnLabel': 'name',
-            'matchType': 'any',
-          }
-        });
-
-        // Create a table, passing some options
-        var table = new google.visualization.ChartWrapper({
-          'chartType': 'Table',
-          'containerId': 'chart_div',
-          'options': {
-            'width': '100%',
-            <!--'height': 500,-->
-            'allowHtml': true,
-          }
-        });
-
-        // Establish dependencies
-        dashboard.bind(nameFilter, table);
-
-        // Draw the dashboard.
-        dashboard.draw(data);
-
-      }
-    </script>
 {% endblock %}
 
 {% block content2 %}
   <h1>Player List</h1>
 
+<script>
+    function searchNames() {
+
+      // Declare variables
+      var input, nameFilter, table, tr, td, i;
+      input = document.getElementById("nameInput");
+      nameFilter = input.value.toUpperCase();
+
+      table = document.getElementsByClassName("datatable")[0];
+
+      tr = table.getElementsByTagName("tr");
+
+      // Loop through all table rows, and hide those who don't match the search query
+      for (i = 0; i < tr.length; i++) {
+        name_td = tr[i].getElementsByTagName("td")[0];
+
+        if (name_td){
+          if ((name_td.innerHTML.toUpperCase().indexOf(nameFilter) > -1)) {
+            tr[i].style.display = "";
+          } else {
+            tr[i].style.display = "none";
+          }
+
+        }
+      }
+    }
+
+</script>
+
+
   <div id="dashboard_div" style="width: 600; align: center; margin:0 auto; display: block">
       <!--Divs that will hold each control and chart-->
       <div style="width: 100%; align: center; margin:0 auto; display: block">
-        <table>
+        <table align="center">
           <tr>
-            <td style="width: 50%"><div id="name_filter_div" style="float: left;"></div></td>
+            <td>
+                <input type="text" id="nameInput" onkeyup="searchNames()" placeholder="filter by name...">
+            </td>
             <!--<td style="width: 50%"><div id="cr_filter_div" style="float: right;"></div></td>-->
           </tr>
+            <tr>
+                <td align="center">
+                    {{table | safe}}
+                </td>
+            </tr>
         </table>
       </div>
-      <br>
-      <div id="chart_div" style="width: 100%; display: block; margin:0 auto;"></div>
+
   </div>
 
 {% endblock %}

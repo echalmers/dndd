@@ -96,7 +96,7 @@ def rolls2links(text):
 
 
 def simulate_roll_from_text(text):
-    parts = text.replace('d', ' ').replace(' + ', ' ').split()
+    parts = text.replace('d', ' ').replace(' + ', ' ').replace(' - ', ' ').split()
     return simulate_roll(count=int(parts[0]),
                          die=int(parts[1]),
                          mod=int(parts[2]))

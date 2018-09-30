@@ -20,8 +20,8 @@ def browse(request):
                     + '">clone/edit</a>   <a href="delete/' + df['name'] \
                     + '">delete</a>'
 
-    variables = df_to_text(df, 'player')
-    print(variables)
+    pd.set_option('display.max_colwidth', -1)
+    variables = {'table': df.fillna('').to_html(classes='datatable', escape=False, index=False)}
 
     return render(request, 'players/browse.html', variables)
 
@@ -59,5 +59,8 @@ def create(request, name=None):
 
 
 def delete(request, name):
-    Player.objects.get(name=name).delete()
+    print(name)
+    p = Player.objects.get(name=name)
+    print(p.name)
+    p.delete()
     return HttpResponseRedirect(reverse('browse_players'))

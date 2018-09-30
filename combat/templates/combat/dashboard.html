@@ -3,38 +3,6 @@
 {% block li_dashboard_att %}active{% endblock %}
 
 {% block head2 %}
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript">
-
-      // Load the Visualization API and the controls package.
-      google.charts.load('current', {'packages':['corechart', 'controls', 'table']});
-      google.charts.setOnLoadCallback(drawTables);
-
-      function drawTables() {
-        // Create our data tables.
-        var data = new google.visualization.arrayToDataTable([
-            {{ combatants_columns|safe }},
-            {{ combatants_rows|safe }}
-        ]);
-
-        // Create table options
-        var options = {
-            'width': '600',
-            <!--'height': 500,-->
-            'allowHtml': true,
-            <!--'showRowNumber': true,-->
-        };
-
-        var table = new google.visualization.Table(document.getElementById('table_div'));
-        table.draw(data, options);
-
-
-          table.setSelection([{row:3}]);
-          <!--window.alert(JSON.stringify(table.getSelection()));-->
-
-      }
-
-    </script>
 {% endblock %}
 
 {% block content2 %}
@@ -73,13 +41,58 @@ function loadDescript(text) {
 }
 </script>
 
+<br>
+<div class="sticky">
+    <table width="100%" border="0">
+        <tr>
+            <td align="center">
+                <table>
+                    <tr><td>
+                        Round {{round}}, Turn {{turn}}, ({{time | safe}})
+                        <button type="button" onclick="location.href='/combat/advance?direction=-1'"><</button>
+                        <button type="button" onclick="location.href='/combat/advance?direction=1'">></button>
+                    </td></tr>
+                    <tr><td>
+                        <button type="button" onclick="location.href='/combat/reset'">Reset</button>
+                    </td></tr>
+                </table>
+            </td>
+            <td align="center">
+                <form action="/combat/change_hp">
+                    Log Damage:
+                    <br><input list="npcs" name="name" placeholder="against NPC...">
+                        <datalist id="npcs">
+                            {{npc_options | safe}}
+                        </datalist>
+                    <br><input type="number" name="attack" placeholder="(optional) attack roll...">
+                    <br><input type="number" name="decrease" placeholder="amount...">
+                    <br> <input type="checkbox" name="resistance" value="resistance"> Apply Resistance
+                    <input type="submit">
+                </form>
+            </td>
+            <td align="center">
+                <form action="/combat/change_hp">
+                    Log Healing:
+                    <br><input list="npcs" name="name" placeholder="for NPC...">
+                        <datalist id="npcs2">
+                            {{npc_options | safe}}
+                        </datalist>
+                    <br><input type="number" name="increase" placeholder="amount...">
+                    <br><input type="submit">
+                </form>
+            </td>
+        </tr>
+    </table>
 
-<table align="center" border="1">
+</div>
+
+<br>
+<table align="center">
     <tr>
-        <td align="center"><div id="table_div"></div></td>
+        <td align="center">{{table | safe}}</td>
     </tr>
     <tr>
-        <td><div id="monsterinfo"></div></td>
+        <td><div id="monsterinfo">{{deets | safe}}</div></td>
     </tr>
 </table>
 

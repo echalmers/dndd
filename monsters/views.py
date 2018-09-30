@@ -12,18 +12,29 @@ import json
 
 
 def browse(request):
-    m = Monster.objects.all().values()
-    df = pd.DataFrame.from_records(m)
-    df = df[['name', 'type', 'hp', 'ac', 'speed', 'cr', 'xp']]
-    df = df.sort_values(['cr', 'name'])
+
+    max_cr = request.GET.get('max_cr', 1000)
+
+    m = Monster.objects.filter(cr__lte=max_cr).values()
+    if len(m) > 0:
+        df = pd.DataFrame.from_records(m)
+        df = df[['name', 'type', 'hp', 'ac', 'speed', 'cr', 'xp']]
+        df = df.sort_values(['cr', 'name'])
+    else:
+        df = pd.DataFrame(columns=['name', 'type', 'hp', 'ac', 'speed', 'cr', 'xp'])
 
     df['actions'] = '<a href="create/' + df['name'] \
                     + '">clone/edit</a>   <a href="delete/' + df['name'] \
                     + '">delete</a>'
 
+    df = df.sort_values('cr', ascending=False)
     df['name'] = df['name'].apply(lambda x: '<a onclick="loadDescript(\'{name}\')" href="#">{name}</a>'.format(name=x))
 
-    variables = df_to_text(df, 'monster')
+    pd.set_option('display.max_colwidth', -1)
+    variables = {'table': df.fillna('').to_html(classes='datatable', escape=False, index=False)}
+    variables['cr_options'] = ''.join(['<option value="{}">'.format(cr)
+                                       for cr in
+                                       sorted(df.cr.unique())])
 
     return render(request, 'monsters/browse.html', variables)
 
@@ -71,6 +82,9 @@ def create(request, name=None):
 
 def deets(request):
     name = request.GET.get('name')
+    return deets_from_name(request, name)
+
+def deets_from_name(request, name):
     m = Monster.objects.get(name=name)
     variables = model_to_dict(m)
 
