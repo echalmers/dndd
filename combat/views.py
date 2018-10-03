@@ -334,7 +334,9 @@ def reset_combat(name):
         npc.save()
     return HttpResponseRedirect(reverse('combat_dashboard'))
 
-def player_view(request):
+
+def player_view_table(request):
+    print('player view table')
 
     combat, _ = Combat.objects.get_or_create(name='main')
 
@@ -379,4 +381,10 @@ def player_view(request):
     seconds = format(total_seconds % 60, '02d')
     variables['time'] = '{min}:{sec}'.format(min=minutes, sec=seconds)
 
-    return render(request, 'combat/player_view.html', variables)
+    print('hi')
+    return render(request, 'combat/player_view_table.html', variables)
+
+
+def player_view(request):
+    print('player view')
+    return render(request, 'combat/player_view.html')

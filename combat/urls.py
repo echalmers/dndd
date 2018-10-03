@@ -14,5 +14,6 @@ urlpatterns = [
     url(r'^advance', views.advance, name='advance_combat'),
     url(r'^change_hp', views.change_hp, name='change_hp'),
     url(r'^reset', views.reset, name='reset'),
-    url(r'^player_view', views.player_view, name='player_view'),
+    url(r'^player_view$', views.player_view, name='player_view'),
+    url(r'^player_view_table', views.player_view_table, name='player_view_table'),
 ]

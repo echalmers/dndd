@@ -3,16 +3,29 @@
 {% block li_player_view_att %}active{% endblock %}
 
 {% block head2 %}
+<script type="text/javascript">
+    function getTable() {
+        <!--ajax to get roll sim-->
+        if (document.hasFocus()) {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                  document.getElementById("player_view_content").innerHTML =
+                  this.responseText;
+                }
+            };
+            xhttp.open("GET", "/combat/player_view_table", true);
+            xhttp.send();
+        }
+        setTimeout(getTable,2000);
+    }
+    getTable();
+</script>
 {% endblock %}
 
 {% block content2 %}
 
-<br>
-<table align="center">
-    <tr><td align="center">Round {{round}} ({{time | safe}})</td></tr>
-    <tr>
-        <td align="center"><br>{{table | safe}}</td>
-    </tr>
-</table>
 
+
+<div id="player_view_content"></div>
 {% endblock %}
