@@ -292,13 +292,13 @@ def change_hp(request):
         attack = int(request.GET.get('attack'))
         print(amount)
 
-        if amount < 0:
+        if attack >= npc.monster.ac:
             if npc.discovered_ac_max is None:
                 npc.discovered_ac_max = attack
             else:
                 npc.discovered_ac_max = min(attack, npc.discovered_ac_max)
             npc.save()
-        elif amount == 0:
+        elif attack < npc.monster.ac:
             if npc.discovered_ac_min is None:
                 npc.discovered_ac_min = attack+1
             else:
@@ -329,6 +329,8 @@ def reset_combat(name):
 
     for npc in NpcCombatant.objects.all():
         npc.current_hp = npc.max_hp
+        npc.discovered_ac_min = None
+        npc.discovered_ac_max = None
         npc.save()
     return HttpResponseRedirect(reverse('combat_dashboard'))
 

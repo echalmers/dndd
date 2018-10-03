@@ -17,7 +17,7 @@ from django.conf.urls import url, include
 from django.contrib import admin
 
 urlpatterns = [
-    url(r'^', include('monsters.urls')),
+    url(r'^', include('combat.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^monsters/', include('monsters.urls')),
     url(r'^players/', include('players.urls')),

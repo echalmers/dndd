@@ -1,0 +1,20 @@
+from django.db import models
+
+class Spell(models.Model):
+    level = models.IntegerField()
+    cantrip = models.BooleanField(default=False)
+    casting_time = models.CharField(max_length=30)
+    range = models.CharField(max_length=30)
+    components = models.CharField(max_length=30)
+    duration = models.CharField(max_length=30)
+    description = models.TextField()
+    ritual = models.BooleanField()
+    concentration = models.BooleanField()
+    bard = models.BooleanField()
+    cleric = models.BooleanField()
+    druid = models.BooleanField()
+    paladin = models.BooleanField()
+    ranger = models.BooleanField()
+    sorcerer = models.BooleanField()
+    warlock = models.BooleanField()
+    wizard = models.BooleanField()
