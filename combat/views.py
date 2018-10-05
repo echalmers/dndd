@@ -207,7 +207,10 @@ def dashboard(request):
     pcs = [{'name': pc.display_name,
             'ac': pc.player.ac,
             'initiative': pc.initiative} for pc in PcCombatant.objects.all()]
-    pcs = pd.DataFrame(pcs)
+    if len(pcs) > 0:
+        pcs = pd.DataFrame(pcs)
+    else:
+        pcs = pd.DataFrame(columns=['name', 'ac', 'initiative'])
 
     npcs = [{'name': npc.display_name,
              'ac': npc.monster.ac,
@@ -215,7 +218,11 @@ def dashboard(request):
              'max hp': npc.max_hp,
              'NPC name': npc.monster.name,
              'initiative': npc.initiative} for npc in NpcCombatant.objects.all()]
-    npcs = pd.DataFrame(npcs)
+    if len(npcs) > 0:
+        npcs = pd.DataFrame(npcs)
+    else:
+        npcs = pd.DataFrame(columns=['name', 'ac', 'hp', 'max hp', 'NPC name', 'initiative'])
+
     # make monster name links
     npcs['NPC name'] = npcs['NPC name'].apply(
         lambda x: '<a onclick="loadDescript(\'{name}\')" href="#">{name}</a>'.format(name=x))
@@ -223,6 +230,10 @@ def dashboard(request):
     # combine pcs and npcs and add turn order
     all_combatants = pcs.append(npcs).sort_values('initiative', ascending=False)
     all_combatants['turn order'] = [i for i in range(1, len(all_combatants.index)+1)]
+
+    # if there's nobody in this fight, redirect
+    if len(all_combatants) == 0:
+        return HttpResponseRedirect(reverse('setup_encounter'))
 
     # if it's an NPCs turn, display the deets
     variables = {}
