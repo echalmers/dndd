@@ -3,6 +3,7 @@ from monsters.models import Monster
 import re
 import json
 import requests
+from monsters.views import signed_string
 
 class Command(BaseCommand):
     help = 'decription here'
@@ -90,6 +91,9 @@ class Command(BaseCommand):
                                     for trait in info['traits']])
             else: traits = None
 
+            # get saving throws
+            saving_throws = ', '.join([att + ' ' + signed_string(info['saving-throws'][att]).strip() for att in info['saving-throws']]) if 'saving-throws' in info else None
+
             # upsert the monster record
             m, _ = Monster.objects.get_or_create(name=info['name'])
 
@@ -101,13 +105,13 @@ class Command(BaseCommand):
                 info['hit-points'].get('modifier', 0))
             m.hp = re.sub('\s{0,2}\+\s{0,2}-', ' - ', m.hp)
             m.speed = info['speed']
-            m.str_mod = info['str']
-            m.dex_mod = info['dex']
-            m.con_mod = info['con']
-            m.int_mod = info['int']
-            m.wis_mod = info['wis']
-            m.cha_mod = info['cha']
-            m.saving_throws = json.dumps(info['saving-throws']) if 'saving-throws' in info else None
+            m.strength = info['str']
+            m.dexterity = info['dex']
+            m.constitution = info['con']
+            m.intelligence = info['int']
+            m.wisdom = info['wis']
+            m.charisma = info['cha']
+            m.saving_throws = saving_throws
             m.skills = json.dumps(info['skills']) if 'skills' in info else None
             m.vulnerabilies = info.get('damage-vulnerabilities', None)
             m.resistances = info.get('damage-resistances', None)

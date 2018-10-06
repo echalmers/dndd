@@ -181,7 +181,7 @@ table {
     text-align: center;
 }
 
-th {
+.datatable th {
 position: sticky;
 top:0
 }

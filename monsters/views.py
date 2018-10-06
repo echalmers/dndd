@@ -100,11 +100,7 @@ def deets_from_name(request, name):
     else:
         del variables['legendary_actions']
 
-    if variables.get('saving_throws') is not None:
-        saving_throws = json.loads(variables['saving_throws'])
-        variables['saving_throws'] = ', '.join([key + ' ' + signed_string(saving_throws[key]) for key in saving_throws]) + ' '
-
-    for key in ['str_mod', 'dex_mod', 'con_mod', 'wis_mod', 'int_mod', 'cha_mod']:
+    for key in ['strength', 'dexterity', 'constitution', 'wisdom', 'intelligence', 'charisma']:
         variables[key] = signed_string(variables[key], is_ability_score=True)
 
     for key in variables:
