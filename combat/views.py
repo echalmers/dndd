@@ -150,7 +150,7 @@ def _add_npc(npc_name, display_name):
     monster = Monster.objects.get(name=npc_name)
     init_roll = simulate_roll(count=1,
                               die=20,
-                              mod=int((monster.dex_mod-10)/2))
+                              mod=int((monster.dexterity-10)/2))
     max_hp = simulate_roll_from_text(monster.hp)['total']
     npcCombatant = NpcCombatant(display_name=display_name,
                                 initiative=init_roll['total'],
