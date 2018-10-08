@@ -9,10 +9,13 @@
 
 {% block content %}
 <ul class="nav2">
-  <li class="nav2"><a class="nav2 {% block li_setup_att %}{% endblock %}" href="setup">Build Encounter</a></li>
-  <li class="nav2"><a class="nav2 {% block li_dashboard_att %}{% endblock %}" href="dashboard">Dashboard</a></li>
-  <li class="nav2"><a class="nav2 {% block li_player_view_att %}{% endblock %}" href="player_view">Player View</a></li>
+    <li class="nav2"><a class="nav2 {% block li_browse_att %}{% endblock %}" href="browse">Combat List</a></li>
+    <li class="nav2"><a class="nav2 {% block li_setup_att %}{% endblock %}" href="setup">Build Encounter</a></li>
+    <li class="nav2"><a class="nav2 {% block li_dashboard_att %}{% endblock %}" href="dashboard">Dashboard</a></li>
+    <li class="nav2"><a class="nav2 {% block li_player_view_att %}{% endblock %}" href="player_view">Player View</a></li>
+    <li style="float: right;"><a class="nav2" href="player_view">Hi</a></li>
 </ul>
+
     {% block content2 %}
     {% endblock %}
 {% endblock %}

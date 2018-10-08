@@ -4,6 +4,7 @@ from django.urls import path
 
 urlpatterns = [
     url(r'^$', views.player_view, name='player_view'),
+    url(r'^browse', views.browse, name='combat_list'),
     url(r'^setup', views.setup, name='setup_encounter'),
     url(r'^add_pc', views.add_pc, name='add_pc'),
     path(r'remove_pc/<str:pc_name>', views.remove_pc, name='remove_pc'),

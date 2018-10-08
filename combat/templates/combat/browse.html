@@ -1,0 +1,61 @@
+{% extends "combat/sub_nav.html" %}
+
+{% block li_browse_att %}active{% endblock %}
+
+{% block head2 %}
+{% endblock %}
+
+{% block content2 %}
+  <h1>Combats</h1>
+
+<script>
+    function searchNames() {
+
+      // Declare variables
+      var input, nameFilter, table, tr, td, i;
+      input = document.getElementById("nameInput");
+      nameFilter = input.value.toUpperCase();
+
+      table = document.getElementsByClassName("datatable")[0];
+
+      tr = table.getElementsByTagName("tr");
+
+      // Loop through all table rows, and hide those who don't match the search query
+      for (i = 0; i < tr.length; i++) {
+        name_td = tr[i].getElementsByTagName("td")[0];
+
+        if (name_td){
+          if ((name_td.innerHTML.toUpperCase().indexOf(nameFilter) > -1)) {
+            tr[i].style.display = "";
+          } else {
+            tr[i].style.display = "none";
+          }
+
+        }
+      }
+    }
+
+</script>
+
+
+  <div id="dashboard_div" style="width: 600; align: center; margin:0 auto; display: block">
+      <!--Divs that will hold each control and chart-->
+      <div style="width: 100%; align: center; margin:0 auto; display: block">
+        <table align="center">
+          <tr>
+            <td>
+                <input type="text" id="nameInput" onkeyup="searchNames()" placeholder="filter by name...">
+            </td>
+            <!--<td style="width: 50%"><div id="cr_filter_div" style="float: right;"></div></td>-->
+          </tr>
+            <tr>
+                <td align="center">
+                    {{table | safe}}
+                </td>
+            </tr>
+        </table>
+      </div>
+
+  </div>
+
+{% endblock %}

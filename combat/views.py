@@ -101,13 +101,16 @@ def setup(request):
 
 def add_pc(request):
 
+    combat, _ = Combat.objects.get_or_create(name='main')
+
     pc_name = request.GET.get('pc')
     print(pc_name)
     player = Player.objects.get(name=pc_name)
 
     pc_combatant = PcCombatant(display_name=player.name,
                                initiative=simulate_roll(1,20,player.initiative)['total'],
-                               player=player)
+                               player=player,
+                               combat=combat)
     pc_combatant.save()
 
     return HttpResponseRedirect(reverse('setup_encounter'))
@@ -115,8 +118,10 @@ def add_pc(request):
 
 def remove_pc(request, pc_name=None):
 
+    combat, _ = Combat.objects.get_or_create(name='main')
+
     print(pc_name)
-    pc_combatant = PcCombatant.objects.get(display_name=pc_name)
+    pc_combatant = PcCombatant.objects.get(display_name=pc_name, combat=combat)
     pc_combatant.delete()
 
     num_combatants = len(NpcCombatant.objects.all()) + len(PcCombatant.objects.all())
@@ -127,20 +132,23 @@ def remove_pc(request, pc_name=None):
 
 
 def add_npc(request):
+
+    combat, _ = Combat.objects.get_or_create(name='main')
+
     npc_name = request.GET.get('npc')
     display_name = request.GET.get('display_name')
-    _add_npc(npc_name, display_name)
+    _add_npc(npc_name, display_name, combat)
 
     return HttpResponseRedirect(reverse('setup_encounter'))
 
 
-def _add_npc(npc_name, display_name):
+def _add_npc(npc_name, display_name, combat):
     if display_name == '':
         number = 1
         while True:
             try:
                 print(number)
-                x = NpcCombatant.objects.get(display_name='NPC ' + str(number))
+                x = NpcCombatant.objects.get(display_name='NPC ' + str(number), combat=combat)
                 print(x)
                 number += 1
             except NpcCombatant.DoesNotExist as ex:
@@ -156,12 +164,16 @@ def _add_npc(npc_name, display_name):
                                 initiative=init_roll['total'],
                                 max_hp=max_hp,
                                 current_hp=max_hp,
-                                monster=monster)
+                                monster=monster,
+                                combat=combat)
     npcCombatant.save()
 
 
 def remove_npc(request, npc_name=None):
-    npc_combatant = NpcCombatant.objects.get(display_name=npc_name)
+
+    combat, _ = Combat.objects.get_or_create(name='main')
+
+    npc_combatant = NpcCombatant.objects.get(display_name=npc_name, combat=combat)
     npc_combatant.delete()
 
     num_combatants = len(NpcCombatant.objects.all()) + len(PcCombatant.objects.all())
@@ -172,6 +184,8 @@ def remove_npc(request, npc_name=None):
 
 
 def randomize(request):
+
+    combat, _ = Combat.objects.get_or_create(name='main')
 
     total_xp = int(request.GET.get('total_xp'))
     max_cr = int(request.GET.get('max_cr'))
@@ -194,7 +208,7 @@ def randomize(request):
         xp_budget -= monster_options.xp[selected_monster]
 
     for monster_name in selected_monsters:
-        _add_npc(monster_name, '')
+        _add_npc(monster_name, '', combat)
 
     reset_combat('main')
     return HttpResponseRedirect(reverse('setup_encounter'))
@@ -203,10 +217,11 @@ def randomize(request):
 def dashboard(request):
 
     combat, _ = Combat.objects.get_or_create(name='main')
+    print(combat.turn)
 
     pcs = [{'name': pc.display_name,
             'ac': pc.player.ac,
-            'initiative': pc.initiative} for pc in PcCombatant.objects.all()]
+            'initiative': pc.initiative} for pc in PcCombatant.objects.filter(combat=combat)]
     if len(pcs) > 0:
         pcs = pd.DataFrame(pcs)
     else:
@@ -217,7 +232,7 @@ def dashboard(request):
              'hp': npc.current_hp,
              'max hp': npc.max_hp,
              'NPC name': npc.monster.name,
-             'initiative': npc.initiative} for npc in NpcCombatant.objects.all()]
+             'initiative': npc.initiative} for npc in NpcCombatant.objects.filter(combat=combat)]
     if len(npcs) > 0:
         npcs = pd.DataFrame(npcs)
     else:
@@ -230,6 +245,8 @@ def dashboard(request):
     # combine pcs and npcs and add turn order
     all_combatants = pcs.append(npcs).sort_values('initiative', ascending=False)
     all_combatants['turn order'] = [i for i in range(1, len(all_combatants.index)+1)]
+    print(all_combatants)
+    print(combat.turn)
 
     # if there's nobody in this fight, redirect
     if len(all_combatants) == 0:
@@ -277,7 +294,7 @@ def advance(request):
     direction = int(request.GET.get('direction', 1))
 
     combat, _ = Combat.objects.get_or_create(name='main')
-    num_combatants = len(NpcCombatant.objects.all()) + len(PcCombatant.objects.all())
+    num_combatants = len(NpcCombatant.objects.filter(combat=combat)) + len(PcCombatant.objects.filter(combat=combat))
 
     combat.turn += direction
     if combat.turn > num_combatants:
@@ -292,8 +309,9 @@ def advance(request):
 
 
 def change_hp(request):
+    combat, _ = Combat.objects.get_or_create(name='main')
 
-    npc = NpcCombatant.objects.get(display_name=request.GET.get('name'))
+    npc = NpcCombatant.objects.get(display_name=request.GET.get('name'), combat=combat)
     try:
         amount = int(request.GET.get('increase', -int(request.GET.get('decrease', 0))))
     except:
@@ -338,7 +356,7 @@ def reset_combat(name):
     combat.round = 1
     combat.save()
 
-    for npc in NpcCombatant.objects.all():
+    for npc in NpcCombatant.objects.filter(combat=combat):
         npc.current_hp = npc.max_hp
         npc.discovered_ac_min = None
         npc.discovered_ac_max = None
@@ -352,7 +370,7 @@ def player_view_table(request):
     combat, _ = Combat.objects.get_or_create(name='main')
 
     pcs = [{'name': pc.display_name,
-            'initiative': pc.initiative} for pc in PcCombatant.objects.all()]
+            'initiative': pc.initiative} for pc in PcCombatant.objects.filter(combat=combat)]
     pcs = pd.DataFrame(pcs)
 
     npcs = [{'name': npc.display_name,
@@ -362,7 +380,7 @@ def player_view_table(request):
              'hp': npc.current_hp,
              'max hp': npc.max_hp,
              'NPC name': npc.monster.name,
-             'initiative': npc.initiative} for npc in NpcCombatant.objects.all()]
+             'initiative': npc.initiative} for npc in NpcCombatant.objects.filter(combat=combat)]
     npcs = pd.DataFrame(npcs)
 
     # combine pcs and npcs and add turn order
@@ -399,3 +417,22 @@ def player_view_table(request):
 def player_view(request):
     print('player view')
     return render(request, 'combat/player_view.html')
+
+
+def browse(request):
+
+    combats = Combat.objects.all()
+    table = []
+    for combat in combats:
+        pcs = ', '.join([pc.display_name for pc in PcCombatant.objects.filter(combat=combat)])
+        npcs = ', '.join([npc.monster.name for npc in NpcCombatant.objects.filter(combat=combat)])
+        table.append({'name': combat.name,
+                      'PCs': pcs,
+                      'NPCs': npcs})
+    table = pd.DataFrame(table).sort_values('name')
+    table = table[['name', 'PCs', 'NPCs']]
+
+    pd.set_option('display.max_colwidth', -1)
+    variables = {'table': table.fillna('').to_html(classes='datatable', escape=False, index=False)}
+
+    return render(request, 'combat/browse.html', variables)
