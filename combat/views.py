@@ -18,8 +18,13 @@ def main(request):
 
 def setup(request):
 
+    combat_name = request.session.get('combat')
+    if combat_name is None:
+        return HttpResponseRedirect(reverse('combat_list'))
+    combat = Combat.objects.get(name=combat_name)
+
     # get table of pc characters
-    pcs = PcCombatant.objects.all()
+    pcs = PcCombatant.objects.filter(combat=combat)
     if len(pcs) > 0:
         pcs = [{'name': pc.display_name,
                 'level': pc.player.level,
@@ -42,7 +47,7 @@ def setup(request):
     variables['pc_options'] = ''.join(all_pcs)
 
     # get table of npc characters
-    npcs = NpcCombatant.objects.all()
+    npcs = NpcCombatant.objects.filter(combat=combat)
     if len(npcs) > 0:
         npcs = [{'display name': npc.display_name,
                  'NPC name': npc.monster.name,
@@ -95,16 +100,20 @@ def setup(request):
     variables['cr_options'] = ''.join(['<option value="{}">'.format(cr)
                                for cr in sorted(list(set([int(monster.cr) for monster in Monster.objects.all()])))])
     variables['npc_options'] = ''.join(all_npcs)
-
+    variables['combat'] = combat_name
     return render(request, 'combat/setup.html', variables)
 
 
 def add_pc(request):
 
-    combat, _ = Combat.objects.get_or_create(name='main')
+    combat_name = request.session.get('combat')
+    if combat_name is None:
+        return HttpResponseRedirect(reverse('combat_list'))
+    combat = Combat.objects.get(name=combat_name)
 
     pc_name = request.GET.get('pc')
     print(pc_name)
+    print(combat_name)
     player = Player.objects.get(name=pc_name)
 
     pc_combatant = PcCombatant(display_name=player.name,
@@ -118,22 +127,27 @@ def add_pc(request):
 
 def remove_pc(request, pc_name=None):
 
-    combat, _ = Combat.objects.get_or_create(name='main')
+    combat_name = request.session.get('combat')
+    if combat_name is None:
+        return HttpResponseRedirect(reverse('combat_list'))
+    combat = Combat.objects.get(name=combat_name)
 
     print(pc_name)
     pc_combatant = PcCombatant.objects.get(display_name=pc_name, combat=combat)
     pc_combatant.delete()
 
-    num_combatants = len(NpcCombatant.objects.all()) + len(PcCombatant.objects.all())
-    combat, _ = Combat.objects.get_or_create(name='main')
+    num_combatants = len(NpcCombatant.objects.filter(combat=combat)) + len(PcCombatant.objects.filter(combat=combat))
+
     combat.turn = min(combat.turn, num_combatants)
     combat.save()
     return HttpResponseRedirect(reverse('setup_encounter'))
 
 
 def add_npc(request):
-
-    combat, _ = Combat.objects.get_or_create(name='main')
+    combat_name = request.session.get('combat')
+    if combat_name is None:
+        return HttpResponseRedirect(reverse('combat_list'))
+    combat = Combat.objects.get(name=combat_name)
 
     npc_name = request.GET.get('npc')
     display_name = request.GET.get('display_name')
@@ -170,22 +184,26 @@ def _add_npc(npc_name, display_name, combat):
 
 
 def remove_npc(request, npc_name=None):
-
-    combat, _ = Combat.objects.get_or_create(name='main')
+    combat_name = request.session.get('combat')
+    if combat_name is None:
+        return HttpResponseRedirect(reverse('combat_list'))
+    combat = Combat.objects.get(name=combat_name)
 
     npc_combatant = NpcCombatant.objects.get(display_name=npc_name, combat=combat)
     npc_combatant.delete()
 
-    num_combatants = len(NpcCombatant.objects.all()) + len(PcCombatant.objects.all())
-    combat, _ = Combat.objects.get_or_create(name='main')
+    num_combatants = len(NpcCombatant.objects.filter(combat=combat)) + len(PcCombatant.objects.filter(combat=combat))
+
     combat.turn = min(combat.turn, num_combatants)
     combat.save()
     return HttpResponseRedirect(reverse('setup_encounter'))
 
 
 def randomize(request):
-
-    combat, _ = Combat.objects.get_or_create(name='main')
+    combat_name = request.session.get('combat')
+    if combat_name is None:
+        return HttpResponseRedirect(reverse('combat_list'))
+    combat = Combat.objects.get(name=combat_name)
 
     total_xp = int(request.GET.get('total_xp'))
     max_cr = int(request.GET.get('max_cr'))
@@ -210,14 +228,15 @@ def randomize(request):
     for monster_name in selected_monsters:
         _add_npc(monster_name, '', combat)
 
-    reset_combat('main')
+    reset_combat(combat_name)
     return HttpResponseRedirect(reverse('setup_encounter'))
 
 
 def dashboard(request):
-
-    combat, _ = Combat.objects.get_or_create(name='main')
-    print(combat.turn)
+    combat_name = request.session.get('combat')
+    if combat_name is None:
+        return HttpResponseRedirect(reverse('combat_list'))
+    combat = Combat.objects.get(name=combat_name)
 
     pcs = [{'name': pc.display_name,
             'ac': pc.player.ac,
@@ -286,6 +305,7 @@ def dashboard(request):
                for name in npcs.name.values]
     variables['npc_options'] = ''.join(all_npcs)
 
+    variables['combat'] = combat_name
     return render(request, 'combat/dashboard.html', variables)
 
 
@@ -293,7 +313,11 @@ def advance(request):
 
     direction = int(request.GET.get('direction', 1))
 
-    combat, _ = Combat.objects.get_or_create(name='main')
+    combat_name = request.session.get('combat')
+    if combat_name is None:
+        return HttpResponseRedirect(reverse('combat_list'))
+    combat = Combat.objects.get(name=combat_name)
+
     num_combatants = len(NpcCombatant.objects.filter(combat=combat)) + len(PcCombatant.objects.filter(combat=combat))
 
     combat.turn += direction
@@ -309,7 +333,10 @@ def advance(request):
 
 
 def change_hp(request):
-    combat, _ = Combat.objects.get_or_create(name='main')
+    combat_name = request.session.get('combat')
+    if combat_name is None:
+        return HttpResponseRedirect(reverse('combat_list'))
+    combat = Combat.objects.get(name=combat_name)
 
     npc = NpcCombatant.objects.get(display_name=request.GET.get('name'), combat=combat)
     try:
@@ -346,12 +373,17 @@ def change_hp(request):
     npc.save()
     return HttpResponseRedirect(reverse('combat_dashboard'))
 
+
 def reset(request):
-    name='main'
+    name = request.session.get('combat')
     return reset_combat(name)
 
+
 def reset_combat(name):
-    combat, _ = Combat.objects.get_or_create(name=name)
+
+    if name is None:
+        return HttpResponseRedirect(reverse('combat_list'))
+    combat = Combat.objects.get(name=name)
     combat.turn = 1
     combat.round = 1
     combat.save()
@@ -367,7 +399,11 @@ def reset_combat(name):
 def player_view_table(request):
     print('player view table')
 
-    combat, _ = Combat.objects.get_or_create(name='main')
+    combat_name = request.session.get('combat')
+    print(combat_name)
+    if combat_name is None:
+        return HttpResponseRedirect(reverse('combat_list'))
+    combat = Combat.objects.get(name=combat_name)
 
     pcs = [{'name': pc.display_name,
             'initiative': pc.initiative} for pc in PcCombatant.objects.filter(combat=combat)]
@@ -410,13 +446,15 @@ def player_view_table(request):
     seconds = format(total_seconds % 60, '02d')
     variables['time'] = '{min}:{sec}'.format(min=minutes, sec=seconds)
 
-    print('hi')
     return render(request, 'combat/player_view_table.html', variables)
 
 
 def player_view(request):
     print('player view')
-    return render(request, 'combat/player_view.html')
+
+    combat_name = request.session.get('combat')
+    variables = {'combat': combat_name}
+    return render(request, 'combat/player_view.html', variables)
 
 
 def browse(request):
@@ -432,7 +470,37 @@ def browse(request):
     table = pd.DataFrame(table).sort_values('name')
     table = table[['name', 'PCs', 'NPCs']]
 
+    # add a 'select' link for each
+    table['actions'] = '<input type="button" onclick="location.href=\'set_combat/' + table['name'] + '\';" value="set active" />' + \
+                       ' <input type="button" onclick="location.href=\'delete_combat/' + table['name'] + '\';" value="delete" />'
+
     pd.set_option('display.max_colwidth', -1)
     variables = {'table': table.fillna('').to_html(classes='datatable', escape=False, index=False)}
 
+    current_combat = request.session.get('combat', None)
+    variables['combat'] = current_combat
     return render(request, 'combat/browse.html', variables)
+
+
+def set_active_combat(request, name):
+
+    request.session['combat'] = name
+    return HttpResponseRedirect(reverse('combat_list'))
+
+
+def create_combat(request):
+    c = Combat(name=request.GET['name'])
+    c.save()
+    request.session['combat'] = c.name
+    return HttpResponseRedirect(reverse('combat_list'))
+
+
+def delete_combat(request, name):
+    c = Combat.objects.get(name=name)
+    c.delete()
+
+    if request.session.get('combat') == name:
+        request.session['combat'] = None
+
+    return HttpResponseRedirect(reverse('combat_list'))
+

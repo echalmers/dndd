@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block content2 %}
-  <h1>Combats</h1>
+  <h1>Combat List</h1>
 
 <script>
     function searchNames() {
@@ -53,8 +53,21 @@
                     {{table | safe}}
                 </td>
             </tr>
+            <tr>
+                <td>
+                    <br><br>
+                    <form action="/combat/create">
+                          <input type="text" name="name" placeholder="name of new combat">
+                          <input type="submit" value="Create">
+                    </form>
+                </td>
+            </tr>
         </table>
       </div>
+
+    <br><br>
+
+
 
   </div>
 

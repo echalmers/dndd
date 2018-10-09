@@ -17,4 +17,8 @@ urlpatterns = [
     url(r'^reset', views.reset, name='reset'),
     url(r'^player_view$', views.player_view, name='player_view'),
     url(r'^player_view_table', views.player_view_table, name='player_view_table'),
+    path(r'set_combat/<str:name>', views.set_active_combat, name='set_combat'),
+    path(r'delete_combat/<str:name>', views.delete_combat, name='delete_combat'),
+    url(r'^create', views.create_combat, name='create_combat'),
+
 ]
