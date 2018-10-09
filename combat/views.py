@@ -453,6 +453,10 @@ def player_view(request):
     print('player view')
 
     combat_name = request.session.get('combat')
+    print(combat_name)
+    if combat_name is None:
+        return HttpResponseRedirect(reverse('combat_list'))
+
     variables = {'combat': combat_name}
     return render(request, 'combat/player_view.html', variables)
 
