@@ -467,8 +467,11 @@ def browse(request):
         table.append({'name': combat.name,
                       'PCs': pcs,
                       'NPCs': npcs})
-    table = pd.DataFrame(table).sort_values('name')
-    table = table[['name', 'PCs', 'NPCs']]
+    if len(table) > 0:
+        table = pd.DataFrame(table).sort_values('name')
+        table = table[['name', 'PCs', 'NPCs']]
+    else:
+        table = pd.DataFrame(columns=['name', 'PCs', 'NPCs'])
 
     # add a 'select' link for each
     table['actions'] = '<input type="button" onclick="location.href=\'set_combat/' + table['name'] + '\';" value="set active" />' + \
