@@ -10,4 +10,7 @@ class PlayerForm(ModelForm):
                   'level',
                   'ac',
                   'initiative',
+                  'advantage_on_init',
                   ]
+        labels = {'advantage_on_init': 'Advantage on Initiative Rolls',
+                  'initiative': 'Initiative Modifier'}

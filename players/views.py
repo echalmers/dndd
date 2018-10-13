@@ -12,9 +12,11 @@ def browse(request):
     players = Player.objects.all().values()
     df = pd.DataFrame.from_records(players)
     if len(df.index) > 0:
-        df = df[['name', 'level', 'ac', 'initiative']]
+        df = df[['name', 'level', 'ac', 'initiative', 'advantage_on_init']]
+        df['advantage_on_init'] = df['advantage_on_init'].apply(lambda x: 'advantage' if x==True else '')
+        df.columns = ['name', 'level', 'ac', 'initiative mod', 'initiative advantage']
     else:
-        df = pd.DataFrame(columns=['name', 'level', 'ac', 'initiative'])
+        df = pd.DataFrame(columns=['name', 'level', 'ac', 'initiative mod', 'initiative advantage'])
 
     df['actions'] = '<a href="create/' + df['name'] \
                     + '">clone/edit</a>   <a href="delete/' + df['name'] \

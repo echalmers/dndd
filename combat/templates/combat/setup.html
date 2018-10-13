@@ -113,6 +113,17 @@ function loadDescript(text) {
   modal.style.display = "block";
 }
 </script>
+<script>
+    <!--function for changing initiative rolls-->
+    function changeInit(player, current) {
+        var newinit = prompt("Enter new initiative for " + player, current);
+        if (newinit == null || newinit == "") {
+
+        } else {
+            window.location.replace("/combat/change_init/?new_init=" + newinit + "&name=" + player);
+        }
+    }
+</script>
 
 <h1>Build Encounter</h1>
 

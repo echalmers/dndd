@@ -7,3 +7,4 @@ class Player(models.Model):
     level = models.IntegerField()
     ac = models.IntegerField()
     initiative = models.IntegerField()
+    advantage_on_init = models.BooleanField(default=False)

@@ -20,5 +20,5 @@ urlpatterns = [
     path(r'set_combat/<str:name>', views.set_active_combat, name='set_combat'),
     path(r'delete_combat/<str:name>', views.delete_combat, name='delete_combat'),
     url(r'^create', views.create_combat, name='create_combat'),
-
+    url(r'^change_init', views.change_init, name='change_init'),
 ]

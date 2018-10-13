@@ -35,8 +35,8 @@ def setup(request):
     else:
         pc_df = pd.DataFrame(columns=['name', 'level', 'initiative'])
 
-    pc_df['actions'] = '<a href="remove_pc/' + pc_df['name'] \
-                       + '">delete</a>'
+    pc_df['actions'] = '<a href="remove_pc/' + pc_df['name'] + '">delete</a>, ' \
+                       + '<a onclick="changeInit(\'' + pc_df['name'] + '\', \'' + pc_df['initiative'].astype(str) + '\')" href="#">change initiative roll</a>'
 
     pd.set_option('display.max_colwidth', -1)
     variables = {'pcs': pc_df.fillna('').to_html(classes='datatable', escape=False, index=False)}
@@ -61,8 +61,8 @@ def setup(request):
     else:
         npcs = pd.DataFrame(columns=['display name','NPC name','max hp','cr','xp','initiative'])
 
-    npcs['actions'] = '<a href="remove_npc/' + npcs['display name'] \
-                       + '">delete</a>'
+    npcs['actions'] = '<a href="remove_npc/' + npcs['display name'] + '">delete</a>'
+
     npcs['NPC name'] = npcs['NPC name'].apply(lambda x: '<a onclick="loadDescript(\'{name}\')" href="#">{name}</a>'.format(name=x))
 
     pd.set_option('display.max_colwidth', -1)
@@ -116,14 +116,31 @@ def add_pc(request):
     print(combat_name)
     player = Player.objects.get(name=pc_name)
 
+    initiative = simulate_roll(1,20,player.initiative)['total']
+    if player.advantage_on_init:
+        initiative = max(initiative,
+                         simulate_roll(1, 20, player.initiative)['total'])
+
     pc_combatant = PcCombatant(display_name=player.name,
-                               initiative=simulate_roll(1,20,player.initiative)['total'],
+                               initiative=initiative,
                                player=player,
                                combat=combat)
     pc_combatant.save()
 
     return HttpResponseRedirect(reverse('setup_encounter'))
 
+
+def change_init(request):
+    combat_name = request.session.get('combat')
+    if combat_name is None:
+        return HttpResponseRedirect(reverse('combat_list'))
+    combat = Combat.objects.get(name=combat_name)
+
+    pc = PcCombatant.objects.get(combat=combat, display_name=request.GET.get('name'))
+    pc.initiative = request.GET.get('new_init')
+    pc.save()
+
+    return HttpResponseRedirect(reverse('setup_encounter'))
 
 def remove_pc(request, pc_name=None):
 

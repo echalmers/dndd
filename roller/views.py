@@ -97,9 +97,22 @@ def rolls2links(text):
 
 def simulate_roll_from_text(text):
     parts = text.replace('d', ' ').replace(' + ', ' ').replace(' - ', ' ').split()
-    return simulate_roll(count=int(parts[0]),
-                         die=int(parts[1]),
-                         mod=int(parts[2]))
+
+    try:
+        if len(parts) == 1:
+            num = int(parts[0])
+            return {'rolls': [num],
+                    'mod': 0,
+                    'total': num,
+                    'math': str(num)}
+        elif len(parts) == 2:
+            return simulate_roll(count=int(parts[0]), die=int(parts[1]), mod=0)
+        elif len(parts) == 3:
+            return simulate_roll(count=int(parts[0]), die=int(parts[1]), mod=int(parts[2]))
+        else:
+            raise Exception(text + ' is not a valid number or roll')
+    except:
+        raise Exception(text + ' is not a valid number or roll')
 
 
 def simulate_roll(count, die, mod):
