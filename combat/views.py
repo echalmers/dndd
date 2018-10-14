@@ -378,7 +378,6 @@ def change_hp(request):
                 npc.discovered_ac_min = max(attack+1, npc.discovered_ac_min)
             npc.save()
     except Exception as ex:
-        raise ex
         pass
 
     if request.GET.get('resistance', False):
