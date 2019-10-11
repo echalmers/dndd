@@ -257,29 +257,31 @@ def dashboard(request):
 
     pcs = [{'name': pc.display_name,
             'ac': pc.player.ac,
-            'initiative': pc.initiative} for pc in PcCombatant.objects.filter(combat=combat)]
+            'initiative': pc.initiative,
+            'dex': pc.player.initiative} for pc in PcCombatant.objects.filter(combat=combat)]
     if len(pcs) > 0:
         pcs = pd.DataFrame(pcs)
     else:
-        pcs = pd.DataFrame(columns=['name', 'ac', 'initiative'])
+        pcs = pd.DataFrame(columns=['name', 'ac', 'initiative', 'dex'])
 
     npcs = [{'name': npc.display_name,
              'ac': npc.monster.ac,
              'hp': npc.current_hp,
              'max hp': npc.max_hp,
              'NPC name': npc.monster.name,
-             'initiative': npc.initiative} for npc in NpcCombatant.objects.filter(combat=combat)]
+             'initiative': npc.initiative,
+             'dex': npc.monster.dexterity} for npc in NpcCombatant.objects.filter(combat=combat)]
     if len(npcs) > 0:
         npcs = pd.DataFrame(npcs)
     else:
-        npcs = pd.DataFrame(columns=['name', 'ac', 'hp', 'max hp', 'NPC name', 'initiative'])
+        npcs = pd.DataFrame(columns=['name', 'ac', 'hp', 'max hp', 'NPC name', 'initiative', 'dex'])
 
     # make monster name links
     npcs['NPC name'] = npcs['NPC name'].apply(
         lambda x: '<a onclick="loadDescript(\'{name}\')" href="#">{name}</a>'.format(name=x))
 
     # combine pcs and npcs and add turn order
-    all_combatants = pcs.append(npcs).sort_values('initiative', ascending=False)
+    all_combatants = pcs.append(npcs).sort_values(['initiative', 'dex'], ascending=False)
     all_combatants['turn order'] = [i for i in range(1, len(all_combatants.index)+1)]
     print(all_combatants)
     print(combat.turn)
@@ -422,7 +424,8 @@ def player_view_table(request):
     combat = Combat.objects.get(name=combat_name)
 
     pcs = [{'name': pc.display_name,
-            'initiative': pc.initiative} for pc in PcCombatant.objects.filter(combat=combat)]
+            'initiative': pc.initiative,
+            'dex': pc.player.initiative} for pc in PcCombatant.objects.filter(combat=combat)]
     pcs = pd.DataFrame(pcs)
 
     npcs = [{'name': npc.display_name,
@@ -432,11 +435,12 @@ def player_view_table(request):
              'hp': npc.current_hp,
              'max hp': npc.max_hp,
              'NPC name': npc.monster.name,
-             'initiative': npc.initiative} for npc in NpcCombatant.objects.filter(combat=combat)]
+             'initiative': npc.initiative,
+             'dex': npc.monster.dexterity} for npc in NpcCombatant.objects.filter(combat=combat)]
     npcs = pd.DataFrame(npcs)
 
     # combine pcs and npcs and add turn order
-    all_combatants = pcs.append(npcs).sort_values('initiative', ascending=False)
+    all_combatants = pcs.append(npcs).sort_values(['initiative', 'dex'], ascending=False)
     all_combatants['turn order'] = [i for i in range(1, len(all_combatants.index) + 1)]
 
     # highlight row of current turn

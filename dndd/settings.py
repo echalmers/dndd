@@ -127,3 +127,6 @@ import os.path
 STATIC_ROOT = ''
 STATIC_URL = '/static/'
 STATICFILES_DIRS = (os.path.join('static'), )
+
+
+# todo: add npc's as party-friendly, scale-up xp for lots of bad guys, add spells/quick reference info, give players more input

@@ -1,8 +1,11 @@
-{% extends "combat/sub_nav.html" %}
+<!--{% extends "combat/sub_nav.html" %}-->
 
-{% block li_player_view_att %}active{% endblock %}
+<!--{% block li_player_view_att %}active{% endblock %}-->
 
-{% block head2 %}
+<!--{% block head2 %}-->
+
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'dndd/style.css' %}">
 <script type="text/javascript">
     function getTable() {
         <!--ajax to get roll sim-->
@@ -21,11 +24,11 @@
     }
     getTable();
 </script>
-{% endblock %}
+<!--{% endblock %}-->
 
-{% block content2 %}
+<!--{% block content2 %}-->
 
 
 
 <div id="player_view_content"></div>
-{% endblock %}
+<!--{% endblock %}-->
